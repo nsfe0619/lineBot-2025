@@ -73,11 +73,13 @@ function getBeautyArr(callback) {
       url: url,
       headers: { Cookie: "over18=1" },
     },
+    console.log("response", response),
     function (error, response, body) {
       var $ = cheerio.load(body);
       $(".r-ent .title a").each(function (i, elem) {
         beautyArr.push($(".r-ent .title a").eq(i).attr("href"));
       });
+      console.log("beautyArr", beautyArr);
       callback(beautyArr);
     }
   );
