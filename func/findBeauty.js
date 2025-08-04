@@ -66,7 +66,7 @@ var beautyArr = [];
 function getBeautyArr(callback) {
   var url =
     "https://www.ptt.cc/bbs/Beauty/index" +
-    parseInt(1754 * Math.random() + 1300) +
+    parseInt(2700 * Math.random() + 1300) +
     ".html";
   request.post(
     {
