@@ -27,17 +27,46 @@ app.post('/webhook', line.middleware(config), (req, res) => {
 
 // 處理訊息事件
 function handleEvent(event) {
-  if (event.type !== 'message' || event.message.type !== 'text') {
-    return Promise.resolve(null);
+    if (event.type !== 'message' || event.message.type !== 'text') {
+      return Promise.resolve(null);
+    }
+  
+    // 處理 "看妹子" 指令
+    if (event.message.text.trim() === '看妹子') {
+      const beauty = require('./func/findBeauty');
+      const context = {
+        reply: (messages) => {
+          if (Array.isArray(messages)) {
+            // 處理多條訊息
+            return Promise.all(messages.map(msg => {
+              if (msg.type === 'text') {
+                return client.replyMessage(event.replyToken, {
+                  type: 'text',
+                  text: msg.text
+                });
+              } else if (msg.type === 'image') {
+                return client.replyMessage(event.replyToken, {
+                  type: 'image',
+                  originalContentUrl: msg.originalContentUrl,
+                  previewImageUrl: msg.previewImageUrl
+                });
+              }
+            }));
+          }
+          return Promise.resolve(null);
+        }
+      };
+      return beauty.findBeauty(context);
+    }
+  
+    // 預設回應
+    const reply = {
+      type: 'text',
+      text: `你說的是：${event.message.text}`
+    };
+  
+    return client.replyMessage(event.replyToken, reply);
   }
-
-  const reply = {
-    type: 'text',
-    text: `你說的是：${event.message.text}`
-  };
-
-  return client.replyMessage(event.replyToken, reply);
-}
 
 // 推播 API （GET）
 app.get('/push', async (req, res) => {
