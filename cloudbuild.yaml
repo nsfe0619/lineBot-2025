@@ -1,0 +1,40 @@
+steps:
+  # 构建容器镜像
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/monkey-bot:$SHORT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/monkey-bot:latest'
+      - '.'
+
+  # 推送到 Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/monkey-bot:$SHORT_SHA'
+
+  # 部署到 Cloud Run
+  - name: 'gcr.io/cloud-builders/gke-deploy'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'monkey-bot'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/monkey-bot:$SHORT_SHA'
+      - '--region'
+      - 'asia-east1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars'
+      - 'CHANNEL_ACCESS_TOKEN=$_CHANNEL_ACCESS_TOKEN,CHANNEL_SECRET=$_CHANNEL_SECRET,USER_ID=$_USER_ID'
+
+images:
+  - 'gcr.io/$PROJECT_ID/monkey-bot:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/monkey-bot:latest'
+
+# 设置构建超时时间（20 分钟）
+timeout: '1200s'
